@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DatabaseServiceProfilerPipeline",
+  "description": "DatabaseService Profiler Pipeline Configuration.",
+  "type": "object",
+  "definitions": {
+    "profilerConfigType": {
+      "description": "Profiler Source Config Pipeline type",
+      "type": "string",
+      "enum": [
+        "Profiler"
+      ],
+      "default": "Profiler"
+    },
+    "processingEngine": {
+      "title": "Processing Engine",
+      "description": "Processing Engine Configuration. If not provided, the Native Engine will be used by default.",
+      "oneOf": [
+        {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "Native Engine Configuration",
+          "description": "Configuration for the native metadata ingestion engine",
+          "type": "object",
+          "javaType": "org.openmetadata.schema.metadataIngestion.engine.NativeEngineConfig",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "Native"
+              ],
+              "description": "The type of the engine configuration"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "Spark Engine Configuration",
+          "description": "This schema defines the configuration for a Spark Engine runner.",
+          "type": "object",
+          "javaType": "org.openmetadata.schema.metadataIngestion.engine.SparkEngineConfig",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "Spark"
+              ],
+              "default": "Spark"
+            },
+            "remote": {
+              "description": "Spark Connect Remote URL.",
+              "type": "string"
+            },
+            "config": {
+              "type": "object",
+              "properties": {
+                "tempPath": {
+                  "description": "Temporary path to store the data.",
+                  "type": "string",
+                  "default": "/tmp/openmetadata"
+                },
+                "extraConfig": {
+                  "title": "Additional Spark Configuration",
+                  "description": "Additional Spark configuration properties as key-value pairs.",
+                  "existingJavaType": "java.util.Map<String,Object>",
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "remote"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "default": {
+        "type": "Native"
+      }
+    }
+  },
+  "properties": {
+    "type": {
+      "description": "Pipeline type",
+      "$ref": "#/definitions/profilerConfigType",
+      "default": "Profiler"
+    },
+    "processingEngine": {
+      "$ref": "#/definitions/processingEngine"
+    },
+    "classificationFilterPattern": {
+      "description": "Regex to only compute metrics for table that matches the given tag, tiers, gloassary pattern.",
+      "$ref": "#/properties/tableFilterPattern",
+      "title": "Classification Filter Pattern"
+    },
+    "schemaFilterPattern": {
+      "description": "Regex to only fetch tables or databases that matches the pattern.",
+      "$ref": "#/properties/tableFilterPattern",
+      "title": "Schema Filter Pattern"
+    },
+    "tableFilterPattern": {
+      "description": "Regex exclude tables or databases that matches the pattern.",
+      "title": "Table Filter Pattern",
+      "type": "object",
+      "javaType": "org.openmetadata.schema.metadataIngestion.FilterPattern",
+      "properties": {
+        "includes": {
+          "description": "List of strings/regex patterns to match and include only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludes": {
+          "description": "List of strings/regex patterns to match and exclude only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "databaseFilterPattern": {
+      "description": "Regex to only fetch databases that matches the pattern.",
+      "$ref": "#/properties/tableFilterPattern",
+      "title": "Database Filter Pattern"
+    },
+    "includeViews": {
+      "description": "Optional configuration to turn off fetching metadata for views.",
+      "type": "boolean",
+      "default": false,
+      "title": "Include Views"
+    },
+    "useFqnForFiltering": {
+      "description": "Regex will be applied on fully qualified name (e.g service_name.db_name.schema_name.table_name) instead of raw name (e.g. table_name)",
+      "type": "boolean",
+      "default": false,
+      "title": "Use FQN For Filtering"
+    },
+    "computeMetrics": {
+      "description": "Option to turn on/off computing profiler metrics.",
+      "type": "boolean",
+      "default": true,
+      "title": "Compute Metrics"
+    },
+    "computeTableMetrics": {
+      "description": "Option to turn on/off table metric computation. If enabled, profiler will compute table level metrics.",
+      "type": "boolean",
+      "default": true,
+      "title": "Compute Table Metrics"
+    },
+    "computeColumnMetrics": {
+      "description": "Option to turn on/off column metric computation. If enabled, profiler will compute column level metrics.",
+      "type": "boolean",
+      "default": true,
+      "title": "Compute Column Metrics"
+    },
+    "useStatistics": {
+      "description": "Use system tables to extract metrics. Metrics that cannot be gathered from system tables will use the default methods. Using system tables can be faster but requires gathering statistics before running (for example using the ANALYZE procedure). More information can be found in the documentation: https://docs.openmetadata.org/latest/profler",
+      "type": "boolean",
+      "default": false,
+      "title": "Use Gathered Statistics"
+    },
+    "profileSampleType": {
+      "title": "Profile Sample Type",
+      "description": "Type of Profile Sample (percentage or rows)",
+      "type": "string",
+      "enum": [
+        "PERCENTAGE",
+        "ROWS"
+      ],
+      "default": "PERCENTAGE"
+    },
+    "profileSample": {
+      "description": "Percentage of data or no. of rows used to compute the profiler metrics and run data quality tests",
+      "type": "number",
+      "default": null,
+      "title": "Profile Sample"
+    },
+    "samplingMethodType": {
+      "title": "Sampling Method Type",
+      "description": "Type of Sampling Method (BERNOULLI or SYSTEM)",
+      "type": "string",
+      "enum": [
+        "BERNOULLI",
+        "SYSTEM"
+      ]
+    },
+    "randomizedSample": {
+      "description": "Whether to randomize the sample data or not.",
+      "type": "boolean",
+      "default": true
+    },
+    "threadCount": {
+      "description": "Number of threads to use during metric computations",
+      "type": "number",
+      "default": 5,
+      "title": "Thread Count"
+    },
+    "timeoutSeconds": {
+      "description": "Profiler Timeout in Seconds",
+      "type": "integer",
+      "default": 43200,
+      "title": "Timeout (in sec.)"
+    }
+  },
+  "additionalProperties": false
+}

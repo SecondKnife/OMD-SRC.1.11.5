@@ -1,0 +1,651 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IcebergConnection",
+  "description": "Iceberg Catalog Connection Config",
+  "type": "object",
+  "javaType": "org.openmetadata.schema.services.connections.database.IcebergConnection",
+  "definitions": {
+    "icebergType": {
+      "description": "Service type.",
+      "type": "string",
+      "enum": [
+        "Iceberg"
+      ],
+      "default": "Iceberg"
+    }
+  },
+  "properties": {
+    "type": {
+      "title": "Service Type",
+      "description": "Service Type",
+      "default": "Iceberg",
+      "type": "string",
+      "enum": [
+        "Iceberg"
+      ]
+    },
+    "catalog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "IcebergCatalog",
+      "description": "Iceberg Catalog configuration.",
+      "type": "object",
+      "javaType": "org.openmetadata.schema.services.connections.database.iceberg.IcebergCatalog",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "description": "Catalog Name.",
+          "type": "string"
+        },
+        "connection": {
+          "title": "Connection",
+          "description": "Catalog connection configuration, depending on your catalog type.",
+          "oneOf": [
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "title": "HiveCatalogConnection",
+              "description": "Iceberg Hive Catalog configuration.",
+              "type": "object",
+              "javaType": "org.openmetadata.schema.services.connections.database.iceberg.HiveCatalogConnection",
+              "properties": {
+                "uri": {
+                  "title": "URI",
+                  "description": "Uri to the Hive Metastore. Example: 'thrift://localhost:9083'",
+                  "type": "string",
+                  "format": "uri"
+                },
+                "fileSystem": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "title": "IcebergFileSystem",
+                  "description": "Iceberg File System configuration, based on where the Iceberg Warehouse is located.",
+                  "javaType": "org.openmetadata.schema.services.connections.database.iceberg.IcebergFileSystem",
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "oneOf": [
+                        {
+                          "title": "Local",
+                          "description": "Local File System.",
+                          "type": "null"
+                        },
+                        {
+                          "title": "AWS",
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "AWS credentials configs.",
+                          "type": "object",
+                          "javaType": "org.openmetadata.schema.security.credentials.AWSCredentials",
+                          "properties": {
+                            "awsAccessKeyId": {
+                              "title": "AWS Access Key ID",
+                              "description": "AWS Access key ID.",
+                              "type": "string"
+                            },
+                            "awsSecretAccessKey": {
+                              "title": "AWS Secret Access Key",
+                              "description": "AWS Secret Access Key.",
+                              "type": "string",
+                              "format": "password"
+                            },
+                            "awsRegion": {
+                              "title": "AWS Region",
+                              "description": "AWS Region",
+                              "type": "string"
+                            },
+                            "awsSessionToken": {
+                              "title": "AWS Session Token",
+                              "description": "AWS Session Token.",
+                              "type": "string"
+                            },
+                            "endPointURL": {
+                              "title": "Endpoint URL",
+                              "description": "EndPoint URL for the AWS",
+                              "type": "string",
+                              "format": "uri"
+                            },
+                            "profileName": {
+                              "title": "Profile Name",
+                              "description": "The name of a profile to use with the boto session.",
+                              "type": "string"
+                            },
+                            "assumeRoleArn": {
+                              "title": "Role Arn for Assume Role",
+                              "description": "The Amazon Resource Name (ARN) of the role to assume. Required Field in case of Assume Role",
+                              "type": "string"
+                            },
+                            "assumeRoleSessionName": {
+                              "title": "Role Session Name for Assume Role",
+                              "description": "An identifier for the assumed role session. Use the role session name to uniquely identify a session when the same role is assumed by different principals or for different reasons. Required Field in case of Assume Role",
+                              "type": "string",
+                              "default": "OpenMetadataSession"
+                            },
+                            "assumeRoleSourceIdentity": {
+                              "title": "Source Identity for Assume Role",
+                              "description": "The Amazon Resource Name (ARN) of the role to assume. Optional Field in case of Assume Role",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "awsRegion"
+                          ]
+                        },
+                        {
+                          "title": "Azure",
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "Azure Cloud Credentials",
+                          "type": "object",
+                          "javaType": "org.openmetadata.schema.security.credentials.AzureCredentials",
+                          "properties": {
+                            "clientId": {
+                              "title": "Client ID",
+                              "description": "Your Service Principal App ID (Client ID)",
+                              "type": "string"
+                            },
+                            "clientSecret": {
+                              "title": "Client Secret",
+                              "description": "Your Service Principal Password (Client Secret)",
+                              "type": "string",
+                              "format": "password"
+                            },
+                            "tenantId": {
+                              "title": "Tenant ID",
+                              "description": "Tenant ID of your Azure Subscription",
+                              "type": "string"
+                            },
+                            "accountName": {
+                              "title": "Storage Account Name",
+                              "description": "Account Name of your storage account",
+                              "type": "string"
+                            },
+                            "vaultName": {
+                              "title": "Key Vault Name",
+                              "description": "Key Vault Name",
+                              "type": "string"
+                            },
+                            "scopes": {
+                              "title": "Scopes",
+                              "description": "Scopes to get access token, for e.g. api://6dfX33ab-XXXX-49df-XXXX-3459eX817d3e/.default",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "uri"
+              ]
+            },
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "title": "RestCatalogConnection",
+              "description": "Iceberg REST Catalog configuration.",
+              "type": "object",
+              "javaType": "org.openmetadata.schema.services.connections.database.iceberg.RestCatalogConnection",
+              "properties": {
+                "uri": {
+                  "title": "URI",
+                  "description": "Uri to the REST catalog. Example: 'http://rest-catalog/ws/'",
+                  "type": "string",
+                  "format": "uri"
+                },
+                "credential": {
+                  "title": "OAuth2 Credential",
+                  "description": "OAuth2 credential to use when initializing the catalog.",
+                  "type": "object",
+                  "properties": {
+                    "clientId": {
+                      "title": "Client ID",
+                      "description": "OAuth2 Client ID.",
+                      "type": "string",
+                      "format": "password"
+                    },
+                    "clientSecret": {
+                      "title": "Client Secret",
+                      "description": "OAuth2 Client Secret",
+                      "type": "string",
+                      "format": "password"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "token": {
+                  "title": "Token",
+                  "description": "Berarer token to use for the 'Authorization' header.",
+                  "type": "string",
+                  "format": "password"
+                },
+                "ssl": {
+                  "title": "SSL",
+                  "description": "SSL Configuration details.",
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "javaType": "org.openmetadata.schema.services.common.SSLCertPaths",
+                  "type": "object",
+                  "properties": {
+                    "caCertPath": {
+                      "title": "CA Certificate Path",
+                      "description": "CA Certificate Path",
+                      "type": "string"
+                    },
+                    "clientCertPath": {
+                      "title": "Client Certificate Path",
+                      "description": "Client Certificate Path",
+                      "type": "string"
+                    },
+                    "privateKeyPath": {
+                      "title": "Private Key Path",
+                      "description": "Private Key Path",
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "sigv4": {
+                  "title": "Sigv4",
+                  "description": "Sign requests to the REST Server using AWS SigV4 protocol.",
+                  "type": "object",
+                  "properties": {
+                    "signingRegion": {
+                      "title": "Signing AWS Region",
+                      "description": "AWS Region to use when SigV4 signs a request.",
+                      "type": "string"
+                    },
+                    "signingName": {
+                      "title": "Signing Name",
+                      "description": "The service signing name to use when SigV4 signs a request.",
+                      "type": "string"
+                    }
+                  }
+                },
+                "fileSystem": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "title": "IcebergFileSystem",
+                  "description": "Iceberg File System configuration, based on where the Iceberg Warehouse is located.",
+                  "javaType": "org.openmetadata.schema.services.connections.database.iceberg.IcebergFileSystem",
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "oneOf": [
+                        {
+                          "title": "Local",
+                          "description": "Local File System.",
+                          "type": "null"
+                        },
+                        {
+                          "title": "AWS",
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "AWS credentials configs.",
+                          "type": "object",
+                          "javaType": "org.openmetadata.schema.security.credentials.AWSCredentials",
+                          "properties": {
+                            "awsAccessKeyId": {
+                              "title": "AWS Access Key ID",
+                              "description": "AWS Access key ID.",
+                              "type": "string"
+                            },
+                            "awsSecretAccessKey": {
+                              "title": "AWS Secret Access Key",
+                              "description": "AWS Secret Access Key.",
+                              "type": "string",
+                              "format": "password"
+                            },
+                            "awsRegion": {
+                              "title": "AWS Region",
+                              "description": "AWS Region",
+                              "type": "string"
+                            },
+                            "awsSessionToken": {
+                              "title": "AWS Session Token",
+                              "description": "AWS Session Token.",
+                              "type": "string"
+                            },
+                            "endPointURL": {
+                              "title": "Endpoint URL",
+                              "description": "EndPoint URL for the AWS",
+                              "type": "string",
+                              "format": "uri"
+                            },
+                            "profileName": {
+                              "title": "Profile Name",
+                              "description": "The name of a profile to use with the boto session.",
+                              "type": "string"
+                            },
+                            "assumeRoleArn": {
+                              "title": "Role Arn for Assume Role",
+                              "description": "The Amazon Resource Name (ARN) of the role to assume. Required Field in case of Assume Role",
+                              "type": "string"
+                            },
+                            "assumeRoleSessionName": {
+                              "title": "Role Session Name for Assume Role",
+                              "description": "An identifier for the assumed role session. Use the role session name to uniquely identify a session when the same role is assumed by different principals or for different reasons. Required Field in case of Assume Role",
+                              "type": "string",
+                              "default": "OpenMetadataSession"
+                            },
+                            "assumeRoleSourceIdentity": {
+                              "title": "Source Identity for Assume Role",
+                              "description": "The Amazon Resource Name (ARN) of the role to assume. Optional Field in case of Assume Role",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "awsRegion"
+                          ]
+                        },
+                        {
+                          "title": "Azure",
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "Azure Cloud Credentials",
+                          "type": "object",
+                          "javaType": "org.openmetadata.schema.security.credentials.AzureCredentials",
+                          "properties": {
+                            "clientId": {
+                              "title": "Client ID",
+                              "description": "Your Service Principal App ID (Client ID)",
+                              "type": "string"
+                            },
+                            "clientSecret": {
+                              "title": "Client Secret",
+                              "description": "Your Service Principal Password (Client Secret)",
+                              "type": "string",
+                              "format": "password"
+                            },
+                            "tenantId": {
+                              "title": "Tenant ID",
+                              "description": "Tenant ID of your Azure Subscription",
+                              "type": "string"
+                            },
+                            "accountName": {
+                              "title": "Storage Account Name",
+                              "description": "Account Name of your storage account",
+                              "type": "string"
+                            },
+                            "vaultName": {
+                              "title": "Key Vault Name",
+                              "description": "Key Vault Name",
+                              "type": "string"
+                            },
+                            "scopes": {
+                              "title": "Scopes",
+                              "description": "Scopes to get access token, for e.g. api://6dfX33ab-XXXX-49df-XXXX-3459eX817d3e/.default",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "uri"
+              ]
+            },
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "title": "GlueCatalogConnection",
+              "description": "Iceberg Glue Catalog configuration.",
+              "type": "object",
+              "javaType": "org.openmetadata.schema.services.connections.database.iceberg.GlueCatalogConnection",
+              "properties": {
+                "awsConfig": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "title": "AWSCredentials",
+                  "description": "AWS credentials configs.",
+                  "type": "object",
+                  "javaType": "org.openmetadata.schema.security.credentials.AWSCredentials",
+                  "properties": {
+                    "awsAccessKeyId": {
+                      "title": "AWS Access Key ID",
+                      "description": "AWS Access key ID.",
+                      "type": "string"
+                    },
+                    "awsSecretAccessKey": {
+                      "title": "AWS Secret Access Key",
+                      "description": "AWS Secret Access Key.",
+                      "type": "string",
+                      "format": "password"
+                    },
+                    "awsRegion": {
+                      "title": "AWS Region",
+                      "description": "AWS Region",
+                      "type": "string"
+                    },
+                    "awsSessionToken": {
+                      "title": "AWS Session Token",
+                      "description": "AWS Session Token.",
+                      "type": "string"
+                    },
+                    "endPointURL": {
+                      "title": "Endpoint URL",
+                      "description": "EndPoint URL for the AWS",
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "profileName": {
+                      "title": "Profile Name",
+                      "description": "The name of a profile to use with the boto session.",
+                      "type": "string"
+                    },
+                    "assumeRoleArn": {
+                      "title": "Role Arn for Assume Role",
+                      "description": "The Amazon Resource Name (ARN) of the role to assume. Required Field in case of Assume Role",
+                      "type": "string"
+                    },
+                    "assumeRoleSessionName": {
+                      "title": "Role Session Name for Assume Role",
+                      "description": "An identifier for the assumed role session. Use the role session name to uniquely identify a session when the same role is assumed by different principals or for different reasons. Required Field in case of Assume Role",
+                      "type": "string",
+                      "default": "OpenMetadataSession"
+                    },
+                    "assumeRoleSourceIdentity": {
+                      "title": "Source Identity for Assume Role",
+                      "description": "The Amazon Resource Name (ARN) of the role to assume. Optional Field in case of Assume Role",
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "awsRegion"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "awsConfig"
+              ]
+            },
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "title": "DynamoDbCatalogConnection",
+              "description": "Iceberg DynamoDB Catalog configuration.",
+              "type": "object",
+              "javaType": "org.openmetadata.schema.services.connections.database.iceberg.DynamoDbCatalogConnection",
+              "properties": {
+                "tableName": {
+                  "title": "Table Name",
+                  "description": "DynamoDB table name.",
+                  "type": "string",
+                  "default": "iceberg"
+                },
+                "awsConfig": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "title": "AWSCredentials",
+                  "description": "AWS credentials configs.",
+                  "type": "object",
+                  "javaType": "org.openmetadata.schema.security.credentials.AWSCredentials",
+                  "properties": {
+                    "awsAccessKeyId": {
+                      "title": "AWS Access Key ID",
+                      "description": "AWS Access key ID.",
+                      "type": "string"
+                    },
+                    "awsSecretAccessKey": {
+                      "title": "AWS Secret Access Key",
+                      "description": "AWS Secret Access Key.",
+                      "type": "string",
+                      "format": "password"
+                    },
+                    "awsRegion": {
+                      "title": "AWS Region",
+                      "description": "AWS Region",
+                      "type": "string"
+                    },
+                    "awsSessionToken": {
+                      "title": "AWS Session Token",
+                      "description": "AWS Session Token.",
+                      "type": "string"
+                    },
+                    "endPointURL": {
+                      "title": "Endpoint URL",
+                      "description": "EndPoint URL for the AWS",
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "profileName": {
+                      "title": "Profile Name",
+                      "description": "The name of a profile to use with the boto session.",
+                      "type": "string"
+                    },
+                    "assumeRoleArn": {
+                      "title": "Role Arn for Assume Role",
+                      "description": "The Amazon Resource Name (ARN) of the role to assume. Required Field in case of Assume Role",
+                      "type": "string"
+                    },
+                    "assumeRoleSessionName": {
+                      "title": "Role Session Name for Assume Role",
+                      "description": "An identifier for the assumed role session. Use the role session name to uniquely identify a session when the same role is assumed by different principals or for different reasons. Required Field in case of Assume Role",
+                      "type": "string",
+                      "default": "OpenMetadataSession"
+                    },
+                    "assumeRoleSourceIdentity": {
+                      "title": "Source Identity for Assume Role",
+                      "description": "The Amazon Resource Name (ARN) of the role to assume. Optional Field in case of Assume Role",
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "awsRegion"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "tableName",
+                "awsConfig"
+              ]
+            }
+          ]
+        },
+        "databaseName": {
+          "title": "Database Name",
+          "description": "Custom Database Name for your Iceberg Service. If not set it will be 'default'.",
+          "type": "string"
+        },
+        "warehouseLocation": {
+          "title": "Warehouse Location",
+          "description": "Warehouse Location. Used to specify a custom warehouse location if needed.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "connection"
+      ]
+    },
+    "ownershipProperty": {
+      "title": "Ownership Property",
+      "description": "Table property to look for the Owner.",
+      "type": "string",
+      "default": "owner"
+    },
+    "schemaFilterPattern": {
+      "title": "Default Schema Filter Pattern",
+      "description": "Regex to only include/exclude schemas that matches the pattern.",
+      "type": "object",
+      "javaType": "org.openmetadata.schema.metadataIngestion.FilterPattern",
+      "properties": {
+        "includes": {
+          "description": "List of strings/regex patterns to match and include only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludes": {
+          "description": "List of strings/regex patterns to match and exclude only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "tableFilterPattern": {
+      "title": "Default Table Filter Pattern",
+      "description": "Regex to only include/exclude tables that matches the pattern.",
+      "type": "object",
+      "javaType": "org.openmetadata.schema.metadataIngestion.FilterPattern",
+      "properties": {
+        "includes": {
+          "description": "List of strings/regex patterns to match and include only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludes": {
+          "description": "List of strings/regex patterns to match and exclude only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "databaseFilterPattern": {
+      "title": "Default Database Filter Pattern",
+      "description": "Regex to only include/exclude databases that matches the pattern.",
+      "type": "object",
+      "javaType": "org.openmetadata.schema.metadataIngestion.FilterPattern",
+      "properties": {
+        "includes": {
+          "description": "List of strings/regex patterns to match and include only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludes": {
+          "description": "List of strings/regex patterns to match and exclude only database entities that match.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "supportsMetadataExtraction": {
+      "title": "Supports Metadata Extraction",
+      "description": "Supports Metadata Extraction.",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "catalog"
+  ]
+}
