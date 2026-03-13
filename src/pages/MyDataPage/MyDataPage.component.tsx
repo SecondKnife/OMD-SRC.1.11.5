@@ -11,12 +11,15 @@
  *  limitations under the License.
  */
 
+import { ImmutableTree } from '@react-awesome-query-builder/antd';
 import { AxiosError } from 'axios';
 import { compare } from 'fast-json-patch';
 import { isEmpty } from 'lodash';
+import Qs from 'qs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import RGL, { ReactGridLayoutProps, WidthProvider } from 'react-grid-layout';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/common/Loader/Loader';
 import { AdvanceSearchProvider } from '../../components/Explore/AdvanceSearchProvider/AdvanceSearchProvider.component';
 import CustomiseLandingPageHeader from '../../components/MyData/CustomizableComponents/CustomiseLandingPageHeader/CustomiseLandingPageHeader';
@@ -50,6 +53,7 @@ const ReactGridLayout = WidthProvider(RGL) as React.ComponentType<
 
 const MyDataPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { currentUser, selectedPersona, setCurrentUser } =
     useApplicationStore();
   const { isWelcomeVisible } = useWelcomeStore();
@@ -241,6 +245,19 @@ const MyDataPage = () => {
     fetchAnnouncements();
   }, []);
 
+  const handleAdvanceSearchSubmit = useCallback(
+    (tree: ImmutableTree) => {
+      navigate({
+        pathname: '/explore/tables',
+        search: Qs.stringify({
+          queryFilter: JSON.stringify(tree),
+          page: 1,
+        }),
+      });
+    },
+    [navigate]
+  );
+
   // call the hook to set the direction of the grid layout
   useGridLayoutDirection(isLoading);
 
@@ -257,7 +274,10 @@ const MyDataPage = () => {
   }
 
   return (
-    <AdvanceSearchProvider isExplorePage={false} updateURL={false}>
+    <AdvanceSearchProvider
+      isExplorePage
+      updateURL={false}
+      onAfterSubmit={handleAdvanceSearchSubmit}>
       <PageLayoutV1
         className="p-b-lg"
         mainContainerClassName="p-t-0 my-data-page-main-container"

@@ -30,6 +30,7 @@ export interface AdvanceSearchProviderProps {
   fieldOverrides?: { field: string; type: string }[];
   searchOutputType?: SearchOutputType;
   entityType?: string; // Optional entity type to filter custom properties
+  onAfterSubmit?: (tree: ImmutableTree) => void;
 }
 
 export interface AdvanceSearchContext {
