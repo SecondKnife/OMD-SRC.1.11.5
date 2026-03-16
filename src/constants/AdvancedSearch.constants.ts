@@ -112,10 +112,6 @@ export const TABLE_DROPDOWN_ITEMS = [
     label: 'label.table-type',
     key: EntityFields.TABLE_TYPE,
   },
-  {
-    label: 'label.column-description',
-    key: EntityFields.COLUMN_DESCRIPTION_STATUS,
-  },
 ];
 
 export const DASHBOARD_DROPDOWN_ITEMS = [
@@ -193,50 +189,17 @@ export const CONTAINER_DROPDOWN_ITEMS = [
   },
 ];
 
-export const GLOSSARY_DROPDOWN_ITEMS = [
-  {
-    label: 'label.domain-plural',
-    key: EntityFields.DOMAINS,
-  },
-  {
-    label: 'label.owner-plural',
-    key: EntityFields.OWNERS,
-  },
-  {
-    label: 'label.tag',
-    key: EntityFields.TAG,
-  },
-  {
-    label: 'label.glossary-plural',
-    key: EntityFields.GLOSSARY,
-  },
-  {
-    label: 'label.status',
-    key: EntityFields.GLOSSARY_TERM_STATUS,
-  },
-];
+export const GLOSSARY_DROPDOWN_ITEMS = [...COMMON_DROPDOWN_ITEMS];
 
 export const TAG_DROPDOWN_ITEMS = [
-  {
-    label: 'label.domain-plural',
-    key: EntityFields.DOMAINS,
-  },
+  ...COMMON_DROPDOWN_ITEMS,
   {
     label: 'label.classification',
     key: EntityFields.CLASSIFICATION,
   },
 ];
 
-export const DATA_PRODUCT_DROPDOWN_ITEMS = [
-  {
-    label: 'label.domain-plural',
-    key: EntityFields.DOMAINS,
-  },
-  {
-    label: 'label.owner-plural',
-    key: EntityFields.OWNERS,
-  },
-];
+export const DATA_PRODUCT_DROPDOWN_ITEMS = [...COMMON_DROPDOWN_ITEMS];
 
 export const DOMAIN_DATAPRODUCT_DROPDOWN_ITEMS = [
   {
