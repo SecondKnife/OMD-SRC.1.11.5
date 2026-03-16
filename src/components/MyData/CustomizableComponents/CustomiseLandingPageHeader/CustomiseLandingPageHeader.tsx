@@ -10,7 +10,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import Icon from '@ant-design/icons';
+import Icon, { FilterOutlined } from '@ant-design/icons';
 import { Button, Carousel, Typography } from 'antd';
 import { AxiosError } from 'axios';
 import classNames from 'classnames';
@@ -43,6 +43,7 @@ import { getEntityName } from '../../../../utils/EntityUtils';
 import serviceUtilClassBase from '../../../../utils/ServiceUtilClassBase';
 import { showErrorToast } from '../../../../utils/ToastUtils';
 import DomainSelectableList from '../../../common/DomainSelectableList/DomainSelectableList.component';
+import { useAdvanceSearch } from '../../../Explore/AdvanceSearchProvider/AdvanceSearchProvider.component';
 import AnnouncementsWidgetV1 from '../../Widgets/AnnouncementsWidgetV1/AnnouncementsWidgetV1.component';
 import CustomiseHomeModal from '../CustomiseHomeModal/CustomiseHomeModal';
 import './customise-landing-page-header.less';
@@ -66,6 +67,7 @@ const CustomiseLandingPageHeader = ({
   const { currentUser } = useApplicationStore();
   const { activeDomain, activeDomainEntityRef, updateActiveDomain } =
     useDomainStore();
+  const { toggleModal } = useAdvanceSearch();
   const [showCustomiseHomeModal, setShowCustomiseHomeModal] = useState(false);
   const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false);
   const [announcements, setAnnouncements] = useState<Thread[]>([]);
@@ -233,6 +235,17 @@ const CustomiseLandingPageHeader = ({
                   />
                 </div>
               </DomainSelectableList>
+              {onHomePage && (
+                <Button
+                  className="d-flex items-center gap-2 border-radius-sm p-x-md bg-white domain-selector"
+                  data-testid="homepage-advance-search-button"
+                  icon={<FilterOutlined />}
+                  onClick={() => toggleModal(true)}>
+                  {t('label.advanced-entity', {
+                    entity: t('label.search'),
+                  })}
+                </Button>
+              )}
             </div>
             {!isPreviewHeader && recentlyViewData.length > 0 && (
               <Carousel

@@ -78,6 +78,7 @@ export const AdvanceSearchProvider = ({
   fieldOverrides = [],
   searchOutputType = SearchOutputType.ElasticSearch,
   entityType,
+  onAfterSubmit,
 }: AdvanceSearchProviderProps) => {
   const tabsInfo = searchClassBase.getTabsInfo();
   const location = useCustomLocation();
@@ -367,8 +368,9 @@ export const AdvanceSearchProvider = ({
     );
 
     updateURL && handleTreeUpdate(treeInternal);
+    onAfterSubmit?.(treeInternal);
     setShowModal(false);
-  }, [treeInternal, config, handleTreeUpdate, updateURL]);
+  }, [treeInternal, config, handleTreeUpdate, updateURL, onAfterSubmit]);
 
   const contextValues = useMemo(
     () => ({

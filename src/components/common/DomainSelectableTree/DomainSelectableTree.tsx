@@ -36,6 +36,7 @@ import { DEFAULT_DOMAIN_VALUE } from '../../../constants/constants';
 import { EntityType } from '../../../enums/entity.enum';
 import { Domain } from '../../../generated/entity/domains/domain';
 import type { EntityReference } from '../../../generated/type/entityReference';
+import { useApplicationStore } from '../../../hooks/useApplicationStore';
 import { useDomainStore } from '../../../hooks/useDomainStore';
 import {
   getDomainChildrenPaginated,
@@ -99,6 +100,32 @@ const DomainSelectablTree: FC<DomainSelectableTreeProps> = ({
   const [domainMapper, setDomainMapper] = useState<Record<string, Domain>>({});
 
   const { activeDomain } = useDomainStore();
+  const { currentUser } = useApplicationStore();
+
+  const filterByUserDomains = useCallback(
+    (domainList: Domain[]): Domain[] => {
+      const { isAdmin = false, domains: userDomains = [] } =
+        currentUser ?? {};
+      if (isAdmin || userDomains.length === 0) {
+        return domainList;
+      }
+      const allowedFqns = new Set(
+        userDomains.map((d) => d.fullyQualifiedName)
+      );
+
+      return domainList.filter(
+        (d) =>
+          allowedFqns.has(d.fullyQualifiedName) ||
+          userDomains.some((ud) =>
+            d.fullyQualifiedName?.startsWith(
+              `${ud.fullyQualifiedName}.`
+            )
+          )
+      );
+    },
+    [currentUser]
+  );
+
   const pagingRef = useRef(INITIAL_PAGING_STATE);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -388,8 +415,12 @@ const DomainSelectablTree: FC<DomainSelectableTreeProps> = ({
           combinedData = [...fetchedData];
         }
 
-        setTreeData(convertDomainsToTreeOptions(combinedData, 0, isMultiple));
-        setDomains(combinedData);
+        const filteredData = filterByUserDomains(combinedData);
+
+        setTreeData(
+          convertDomainsToTreeOptions(filteredData, 0, isMultiple)
+        );
+        setDomains(filteredData);
 
         setPaging({
           offset: currentOffset,
@@ -471,13 +502,14 @@ const DomainSelectablTree: FC<DomainSelectableTreeProps> = ({
           });
 
           const uniqueData = uniqBy(combinedData, 'fullyQualifiedName');
+          const filteredData = filterByUserDomains(uniqueData);
           const updatedTreeData = convertDomainsToTreeOptions(
-            uniqueData,
+            filteredData,
             0,
             isMultiple
           );
           setTreeData(updatedTreeData);
-          setDomains(uniqueData);
+          setDomains(filteredData);
         } finally {
           setIsLoading(false);
         }
