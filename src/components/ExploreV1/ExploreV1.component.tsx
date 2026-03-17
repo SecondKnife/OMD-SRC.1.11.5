@@ -73,7 +73,6 @@ import './exploreV1.less';
 import { exportTableData } from '../../rest/customAPI';
 import { showErrorToast } from '../../utils/ToastUtils';
 import { AxiosError } from 'axios';
-import { mockSearchData } from '../../constants/mockTourData.constants';
 
 const IndexNotFoundBanner = () => {
   const { theme } = useApplicationStore();
@@ -315,10 +314,90 @@ const ExploreV1: React.FC<ExploreProps> = ({
   }, []);
 
   useEffect(() => {
-    const dropdownItems: Array<{
+    const rawDropdownItems: Array<{
       label: string;
       key: string;
     }> = getDropDownItems(activeTabKey);
+
+    let dropdownItems = rawDropdownItems;
+
+    // Detect Governance root context: DATA_ASSET index with entityType filter containing
+    // one or more governance entity types (tag / glossary_term / metric).
+    const isDataAssetIndex = activeTabKey === SearchIndex.DATA_ASSET;
+    let isGovernanceRootContext = false;
+
+    if (isDataAssetIndex && quickFilters?.query?.bool?.must) {
+      const mustClauses = Array.isArray(quickFilters.query.bool.must)
+        ? quickFilters.query.bool.must
+        : [];
+
+      const entityTypeValues = new Set<string>();
+
+      mustClauses.forEach((mustItem: any) => {
+        const shouldClauses = Array.isArray(mustItem?.bool?.should)
+          ? mustItem.bool.should
+          : [];
+
+        shouldClauses.forEach((shouldItem: any) => {
+          const termObject = shouldItem?.term as
+            | Record<string, unknown>
+            | undefined;
+
+          if (!termObject) {
+            return;
+          }
+
+          const termKey = Object.keys(termObject).find(
+            (key) =>
+              key === EntityFields.ENTITY_TYPE_KEYWORD ||
+              key === 'entityType.keyword'
+          );
+
+          if (!termKey) {
+            return;
+          }
+
+          const value = termObject[termKey];
+
+          if (typeof value === 'string') {
+            entityTypeValues.add(value.toLowerCase());
+          } else if (Array.isArray(value)) {
+            value.forEach((entry) => {
+              if (typeof entry === 'string') {
+                entityTypeValues.add(entry.toLowerCase());
+              }
+            });
+          }
+        });
+      });
+
+      const governanceEntityTypes = new Set<string>([
+        'tag',
+        'glossary_term',
+        'glossaryterm',
+        'metric',
+      ]);
+
+      isGovernanceRootContext = Array.from(entityTypeValues).some((value) =>
+        governanceEntityTypes.has(value)
+      );
+    }
+
+    if (isGovernanceRootContext) {
+      const allowedKeysForGovernanceRoot = new Set<string>([
+        EntityFields.DOMAINS,
+        EntityFields.OWNERS,
+        EntityFields.TAG,
+        EntityFields.TIER,
+        EntityFields.CERTIFICATION,
+        EntityFields.SERVICE,
+        EntityFields.SERVICE_TYPE,
+      ]);
+
+      dropdownItems = rawDropdownItems.filter((item) =>
+        allowedKeysForGovernanceRoot.has(item.key as EntityFields)
+      );
+    }
 
     const selectedValuesFromQuickFilter = getSelectedValuesFromQuickFilter(
       dropdownItems,
@@ -332,29 +411,6 @@ const ExploreV1: React.FC<ExploreProps> = ({
       }))
     );
   }, [activeTabKey, quickFilters]);
-
-  const visibleQuickFilters = useMemo(() => {
-    // In governance (Domain / Glossary Term / Tag) hide DB/schema/column/table-type filters
-    const isGovernanceIndex =
-      activeTabKey === SearchIndex.METRIC_SEARCH_INDEX ||
-      activeTabKey === SearchIndex.GLOSSARY_TERM ||
-      activeTabKey === SearchIndex.TAG;
-
-    if (!isGovernanceIndex) {
-      return selectedQuickFilters;
-    }
-
-    const hiddenKeys = new Set<string>([
-      EntityFields.DATABASE,
-      EntityFields.DATABASE_SCHEMA,
-      EntityFields.COLUMN,
-      EntityFields.TABLE_TYPE,
-    ]);
-
-    return selectedQuickFilters.filter(
-      (field) => !hiddenKeys.has(field.key as EntityFields)
-    );
-  }, [activeTabKey, selectedQuickFilters]);
 
   useEffect(() => {
     if (!isUndefined(searchResults) && searchResults?.hits?.hits[0]) {
@@ -488,7 +544,7 @@ const ExploreV1: React.FC<ExploreProps> = ({
                           <Col>
                             <ExploreQuickFilters
                               aggregations={aggregations}
-                              fields={visibleQuickFilters}
+                              fields={selectedQuickFilters}
                               fieldsWithNullValues={
                                 SUPPORTED_EMPTY_FILTER_FIELDS
                               }

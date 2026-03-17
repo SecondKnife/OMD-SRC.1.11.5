@@ -360,6 +360,12 @@ const SchemaTable = () => {
     }
   }, [tableFqn]);
 
+  const handleRelationsUpdated = useCallback(() => {
+    // Refresh both custom column relations and lineage-based column relations
+    fetchColumnRelations();
+    fetchLineageColumns();
+  }, [fetchColumnRelations, fetchLineageColumns]);
+
   useEffect(() => {
     fetchTestCaseSummary();
   }, [tableFqn]);
@@ -719,7 +725,7 @@ const SchemaTable = () => {
             lineageColumns={lineageColumnMap[record.name] ?? []}
             relations={columnRelations}
             tableFqn={tableFqn}
-            onRelationChange={fetchColumnRelations}
+            onRelationChange={handleRelationsUpdated}
           />
         ),
       },

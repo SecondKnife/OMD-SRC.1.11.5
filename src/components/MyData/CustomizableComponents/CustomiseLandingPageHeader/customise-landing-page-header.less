@@ -153,6 +153,21 @@
   width: 100%;
 }
 
+.landing-page-filter-row {
+  // Only normalize Advanced Search (AntD Button) height to match Domain selector.
+  // Do not touch Search input or Domain selector styles.
+  [data-testid="homepage-advance-search-button"].ant-btn.domain-selector {
+    box-sizing: border-box;
+    height: 56px;
+    min-height: 56px;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 56px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 .domain-selector {
   flex-shrink: 0;
   white-space: nowrap;

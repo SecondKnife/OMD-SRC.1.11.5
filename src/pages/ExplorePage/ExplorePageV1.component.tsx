@@ -30,6 +30,7 @@ import {
   MOCK_EXPLORE_PAGE_COUNT,
 } from '../../constants/mockTourData.constants';
 import { useTourProvider } from '../../context/TourProvider/TourProvider';
+import { EntityFields } from '../../enums/AdvancedSearch.enum';
 import { SORT_ORDER } from '../../enums/common.enum';
 import { EntityType } from '../../enums/entity.enum';
 import { SearchIndex } from '../../enums/search.enum';
@@ -240,6 +241,104 @@ const ExplorePageV1: FC<unknown> = () => {
 
   const searchIndex = useMemo(() => {
     if (!searchQueryParam) {
+      if (isString(parsedSearch.quickFilter)) {
+        try {
+          const parsedQuickFilter = JSON.parse(
+            parsedSearch.quickFilter
+          ) as QueryFilterInterface;
+          const mustField: QueryFieldInterface[] = get(
+            parsedQuickFilter,
+            'query.bool.must',
+            []
+          );
+          const entityTypeValues = new Set<string>();
+
+          mustField.forEach((filterCategory: QueryFieldInterface) => {
+            const rawShouldField = get(filterCategory, 'bool.should', []);
+            const shouldField: QueryFieldInterface[] = Array.isArray(
+              rawShouldField
+            )
+              ? rawShouldField
+              : [];
+
+            shouldField.forEach((field) => {
+              const term = field.term as Record<string, unknown> | undefined;
+              if (!term) {
+                return;
+              }
+              Object.entries(term).forEach(([key, value]) => {
+                if (
+                  key === EntityFields.ENTITY_TYPE_KEYWORD ||
+                  key === 'entityType.keyword'
+                ) {
+                  if (typeof value === 'string') {
+                    entityTypeValues.add(value.toLowerCase());
+                  } else if (Array.isArray(value)) {
+                    value.forEach((v) => {
+                      if (typeof v === 'string') {
+                        entityTypeValues.add(v.toLowerCase());
+                      }
+                    });
+                  }
+                }
+              });
+            });
+          });
+
+          // If the ExploreTree selected a single entityType, route the searchIndex to that entity's index.
+          // This is critical for Governance leaf nodes like Tags, which should query tag_search_index.
+          if (entityTypeValues.size === 1) {
+            const [singleEntityType] = Array.from(entityTypeValues);
+            const mappedIndex =
+              singleEntityType === 'tag'
+                ? SearchIndex.TAG
+                : singleEntityType === 'glossary_term' ||
+                  singleEntityType === 'glossaryterm'
+                ? SearchIndex.GLOSSARY_TERM
+                : singleEntityType === 'metric'
+                ? SearchIndex.METRIC_SEARCH_INDEX
+                : singleEntityType === 'data_product'
+                ? SearchIndex.DATA_PRODUCT
+                : undefined;
+
+            if (mappedIndex) {
+              return mappedIndex as unknown as ExploreSearchIndex;
+            }
+          }
+
+          const hasEntityTypeFilter = mustField.some(
+            (filterCategory: QueryFieldInterface) => {
+              const rawShouldField = get(filterCategory, 'bool.should', []);
+              const shouldField: QueryFieldInterface[] = Array.isArray(
+                rawShouldField
+              )
+                ? rawShouldField
+                : [];
+
+              return shouldField.some((field) => {
+                const term = field.term as Record<string, unknown> | undefined;
+                if (!term) {
+                  return false;
+                }
+
+                return Object.keys(term).some(
+                  (key) =>
+                    key === EntityFields.ENTITY_TYPE_KEYWORD ||
+                    key === 'entityType.keyword'
+                );
+              });
+            }
+          );
+
+          // If entityType is present but multiple are selected, fallback to DATA_ASSET for cross-entity search.
+          if (hasEntityTypeFilter) {
+            return SearchIndex.DATA_ASSET as unknown as ExploreSearchIndex;
+          }
+        } catch {
+          // Ignore malformed quickFilter
+        }
+      }
+
       // Keep Explore default behavior consistent with v1.4.4 (table-centric Explore filters).
       return SearchIndex.TABLE as unknown as ExploreSearchIndex;
     }
@@ -256,7 +355,7 @@ const ExplorePageV1: FC<unknown> = () => {
     return !isNil(tabInfo)
       ? (tabInfo[0] as ExploreSearchIndex)
       : (SearchIndex.TABLE as unknown as ExploreSearchIndex);
-  }, [tab, searchHitCounts, searchQueryParam]);
+  }, [tab, searchHitCounts, searchQueryParam, parsedSearch.quickFilter]);
 
   // Use the utility function to generate tab items
   const tabItems = useMemo(() => {

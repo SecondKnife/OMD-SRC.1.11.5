@@ -24,6 +24,7 @@ import { ReactComponent as DomainIcon } from '../../../../assets/svg/ic-domain.s
 import LandingPageBg from '../../../../assets/svg/landing-page-header-bg.svg';
 import { DEFAULT_DOMAIN_VALUE } from '../../../../constants/constants';
 import { DEFAULT_HEADER_BG_COLOR } from '../../../../constants/Mydata.constants';
+import { SearchIndex } from '../../../../enums/search.enum';
 import { Thread } from '../../../../generated/entity/feed/thread';
 import { EntityReference } from '../../../../generated/entity/type';
 import { useApplicationStore } from '../../../../hooks/useApplicationStore';
@@ -67,7 +68,7 @@ const CustomiseLandingPageHeader = ({
   const { currentUser } = useApplicationStore();
   const { activeDomain, activeDomainEntityRef, updateActiveDomain } =
     useDomainStore();
-  const { toggleModal } = useAdvanceSearch();
+  const { toggleModal, onChangeSearchIndex } = useAdvanceSearch();
   const [showCustomiseHomeModal, setShowCustomiseHomeModal] = useState(false);
   const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false);
   const [announcements, setAnnouncements] = useState<Thread[]>([]);
@@ -236,15 +237,28 @@ const CustomiseLandingPageHeader = ({
                 </div>
               </DomainSelectableList>
               {onHomePage && (
-                <Button
+                <div
                   className="d-flex items-center gap-2 border-radius-sm p-x-md bg-white domain-selector"
                   data-testid="homepage-advance-search-button"
-                  icon={<FilterOutlined />}
-                  onClick={() => toggleModal(true)}>
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    // Match Explore behaviour: Advanced Search defaults to Table search index.
+                    onChangeSearchIndex(SearchIndex.TABLE);
+                    toggleModal(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onChangeSearchIndex(SearchIndex.TABLE);
+                      toggleModal(true);
+                    }
+                  }}>
+                  <FilterOutlined />
                   {t('label.advanced-entity', {
                     entity: t('label.search'),
                   })}
-                </Button>
+                </div>
               )}
             </div>
             {!isPreviewHeader && recentlyViewData.length > 0 && (
